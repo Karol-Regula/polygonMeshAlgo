@@ -39,6 +39,29 @@ lines connecting each points to create bounding
 triangles
 ====================*/
 void draw_polygons( struct matrix *polygons, screen s, color c ) {
+  
+  if ( points->lastcol < 3 ) {
+    printf("Need at least 3 points to draw a polygon!\n");
+    return;
+  }
+  
+  int point;
+  for (point=0; point < points->lastcol-2; point+=3)
+    draw_line( points->m[0][point],
+	       points->m[1][point],
+	       points->m[0][point+1],
+	       points->m[1][point+1],
+	       s, c);	
+    draw_line( points->m[0][point+1],
+	       points->m[1][point+1],
+	       points->m[0][point+2],
+	       points->m[1][point+2],
+	       s, c);	
+    draw_line( points->m[0][point],
+	       points->m[1][point],
+	       points->m[0][point+2],
+	       points->m[1][point+2],
+	       s, c);	
 }
 
 
