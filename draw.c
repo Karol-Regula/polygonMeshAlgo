@@ -150,7 +150,7 @@ void add_box( struct matrix * edges,
 void add_sphere( struct matrix * edges,
 		 double cx, double cy, double cz,
 		 double r, double step ) {
-  step *= 10;
+  step *= 5;
   struct matrix *points = generate_sphere(cx, cy, cz, r, step);
   int num_steps = (int)(1/step +0.1);
   int index, lat, longt;
@@ -165,13 +165,27 @@ void add_sphere( struct matrix * edges,
   for ( lat = latStart; lat < latStop; lat++ ) {
     for ( longt = longStart; longt <= longStop; longt++ ) {
       index = lat * (num_steps) + longt;
-      add_polygon( edges, points->m[0][index % p], points->m[1][index % p], points->m[2][index % p],
-                          points->m[0][(index + num_steps + 1) % p], points->m[1][(index + num_steps + 1) % p], points->m[2][(index + num_steps + 1) % p],
-                          points->m[0][(index + num_steps) % p], points->m[1][(index + num_steps) % p], points->m[2][(index + num_steps) % p]);
-      add_polygon( edges, points->m[0][index % p], points->m[1][index % p], points->m[2][index % p],
-                          points->m[0][(index + 1) % p], points->m[1][(index + 1) % p], points->m[2][(index + 1) % p],
-                          points->m[0][(index + num_steps + 1) % p], points->m[1][(index + num_steps + 1) % p], points->m[2][(index + num_steps + 1) % p]);
-    }
+
+			//top-left
+			int x0 = points->m[0][index];
+			int y0 = points->m[1][index];
+			int z0 = points->m[2][index];
+			//top-right
+			int x1 = points->m[0][(index + num_steps) % p];
+			int y1 = points->m[1][(index + num_steps) % p];
+			int z1 = points->m[2][(index + num_steps) % p];
+			//bottom-left
+			int x2 = points->m[0][(index + 1) % p];
+			int y2 = points->m[1][(index + 1) % p];
+			int z2 = points->m[2][(index + 1) % p];
+			//bottom-right
+			int x3 = points->m[0][(index + num_steps + 1) % p];
+			int y3 = points->m[1][(index + num_steps + 1) % p];
+			int z3 = points->m[2][(index + num_steps + 1) % p];
+
+			add_polygon(edges, x0, y0, z0, x2, y2, z2, x1, y1, z1);
+      add_polygon(edges, x2, y2, z2, x3, y3, z3, x1, y1, z1);
+		}
   }
   free_matrix(points);
 }
@@ -243,6 +257,7 @@ void add_torus( struct matrix * edges,
 		double cx, double cy, double cz,
 		double r1, double r2, double step ) {
 
+	step *= 5;
   struct matrix *points = generate_torus(cx, cy, cz, r1, r2, step);
   int num_steps = (int)(1/step +0.1);
   int index, lat, longt;
@@ -251,17 +266,38 @@ void add_torus( struct matrix * edges,
   latStop = num_steps;
   longStart = 0;
   longStop = num_steps;
+	int p = (points->lastcol);
 
   for ( lat = latStart; lat < latStop; lat++ ) {
     for ( longt = longStart; longt < longStop; longt++ ) {
-
       index = lat * (num_steps) + longt;
-      add_edge( edges, points->m[0][index],
-		points->m[1][index],
-		points->m[2][index],
-		points->m[0][index] + 1,
-		points->m[1][index] + 1,
-		points->m[2][index] + 1);
+
+			//top-left
+			int x0 = points->m[0][index];
+			int y0 = points->m[1][index];
+			int z0 = points->m[2][index];
+			//top-right
+			int x1 = points->m[0][(index + num_steps) % p];
+			int y1 = points->m[1][(index + num_steps) % p];
+			int z1 = points->m[2][(index + num_steps) % p];
+			//bottom-left
+			int x2 = points->m[0][(index + 1) % p];
+			int y2 = points->m[1][(index + 1) % p];
+			int z2 = points->m[2][(index + 1) % p];
+			//bottom-right
+			int x3 = points->m[0][(index + num_steps + 1) % p];
+			int y3 = points->m[1][(index + num_steps + 1) % p];
+			int z3 = points->m[2][(index + num_steps + 1) % p];
+
+			add_polygon(edges, x0, y0, z0, x2, y2, z2, x1, y1, z1);
+      add_polygon(edges, x2, y2, z2, x3, y3, z3, x1, y1, z1);
+
+			//add_polygon( edges, points->m[0][index % p], points->m[1][index % p], points->m[2][index % p],
+      //                    points->m[0][(index + num_steps + 1) % p], points->m[1][(index + num_steps + 1) % p], points->m[2][(index + num_steps + 1) % p],
+      //                    points->m[0][(index + num_steps) % p], points->m[1][(index + num_steps) % p], points->m[2][(index + num_steps) % p]);
+      //add_polygon( edges, points->m[0][index % p], points->m[1][index % p], points->m[2][index % p],
+      //                    points->m[0][(index + 1) % p], points->m[1][(index + 1) % p], points->m[2][(index + 1) % p],
+      //                    points->m[0][(index + num_steps + 1) % p], points->m[1][(index + num_steps + 1) % p], points->m[2][(index + num_steps + 1) % p]);
     }
   }
   free_matrix(points);
