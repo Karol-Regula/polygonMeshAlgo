@@ -50,22 +50,39 @@ void draw_polygons( struct matrix *polygons, screen s, color c ) {
 
   int point;
   for (point=0; point < polygons->lastcol-2; point+=3){
-    draw_line( polygons->m[0][point],
-	       polygons->m[1][point],
-	       polygons->m[0][point+1],
-	       polygons->m[1][point+1],
-	       s, c);
-    draw_line( polygons->m[0][point+1],
-	       polygons->m[1][point+1],
-	       polygons->m[0][point+2],
-	       polygons->m[1][point+2],
-	       s, c);
-    draw_line( polygons->m[0][point],
-	       polygons->m[1][point],
-	       polygons->m[0][point+2],
-	       polygons->m[1][point+2],
-	       s, c);
+    int val = normal(polygons->m[0][point], polygons->m[1][point], polygons->m[2][point],
+                     polygons->m[0][point + 1], polygons->m[1][point + 1], polygons->m[2][point + 1],
+                     polygons->m[0][point + 2], polygons->m[1][point + 2], polygons->m[2][point + 2]);
+    if (val > 0){
+      draw_line( polygons->m[0][point],
+  	       polygons->m[1][point],
+  	       polygons->m[0][point+1],
+  	       polygons->m[1][point+1],
+  	       s, c);
+      draw_line( polygons->m[0][point+1],
+  	       polygons->m[1][point+1],
+  	       polygons->m[0][point+2],
+  	       polygons->m[1][point+2],
+  	       s, c);
+      draw_line( polygons->m[0][point],
+  	       polygons->m[1][point],
+  	       polygons->m[0][point+2],
+  	       polygons->m[1][point+2],
+  	       s, c);
+    }
   }
+}
+
+int normal(double x0, double y0, double z0, double x1, double y1, double z1, double x2, double y2, double z2){
+  //vector A
+  int ax = x1 - x0;
+  int ay = y1 - y0;
+  //vector B
+  int bx = x2 - x0;
+  int by = y2 - y0;
+  //N = A x B, only need z-component
+  int Nz = ax*by - ay*bx;
+  return Nz;
 }
 
 
@@ -133,7 +150,7 @@ void add_box( struct matrix * edges,
 void add_sphere( struct matrix * edges,
 		 double cx, double cy, double cz,
 		 double r, double step ) {
-
+  step *= 10;
   struct matrix *points = generate_sphere(cx, cy, cz, r, step);
   int num_steps = (int)(1/step +0.1);
   int index, lat, longt;
@@ -142,18 +159,18 @@ void add_sphere( struct matrix * edges,
   latStop = num_steps;
   longStart = 0;
   longStop = num_steps;
+  int p = (points->lastcol);
 
   num_steps++;
   for ( lat = latStart; lat < latStop; lat++ ) {
     for ( longt = longStart; longt <= longStop; longt++ ) {
-
       index = lat * (num_steps) + longt;
-      add_edge( edges, points->m[0][index],
-		points->m[1][index],
-		points->m[2][index],
-		points->m[0][index] + 1,
-		points->m[1][index] + 1,
-		points->m[2][index] + 1);
+      add_polygon( edges, points->m[0][index % p], points->m[1][index % p], points->m[2][index % p],
+                          points->m[0][(index + num_steps + 1) % p], points->m[1][(index + num_steps + 1) % p], points->m[2][(index + num_steps + 1) % p],
+                          points->m[0][(index + num_steps) % p], points->m[1][(index + num_steps) % p], points->m[2][(index + num_steps) % p]);
+      add_polygon( edges, points->m[0][index % p], points->m[1][index % p], points->m[2][index % p],
+                          points->m[0][(index + 1) % p], points->m[1][(index + 1) % p], points->m[2][(index + 1) % p],
+                          points->m[0][(index + num_steps + 1) % p], points->m[1][(index + num_steps + 1) % p], points->m[2][(index + num_steps + 1) % p]);
     }
   }
   free_matrix(points);
